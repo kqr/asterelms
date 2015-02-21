@@ -1828,6 +1828,7 @@ Elm.Main.make = function (_elm) {
    $Graphics$Collage = Elm.Graphics.Collage.make(_elm),
    $Graphics$Element = Elm.Graphics.Element.make(_elm),
    $Keyboard = Elm.Keyboard.make(_elm),
+   $List = Elm.List.make(_elm),
    $Signal = Elm.Signal.make(_elm),
    $Time = Elm.Time.make(_elm);
    var sprRock = $Graphics$Collage.outlined($Graphics$Collage.solid($Color.white))($Graphics$Collage.polygon(_L.fromArray([{ctor: "_Tuple2"
@@ -1866,6 +1867,7 @@ Elm.Main.make = function (_elm) {
                                                                                                                           ,{ctor: "_Tuple2"
                                                                                                                            ,_0: 19
                                                                                                                            ,_1: 30}])));
+   var sprBullet = $Graphics$Collage.outlined($Graphics$Collage.solid($Color.white))($Graphics$Collage.circle(2));
    var sprSpaceship = $Graphics$Collage.rotate((0 - $Basics.pi) / 2)($Graphics$Collage.outlined($Graphics$Collage.solid($Color.white))($Graphics$Collage.polygon(_L.fromArray([{ctor: "_Tuple2"
                                                                                                                                                                                ,_0: 0
                                                                                                                                                                                ,_1: 15}
@@ -1878,6 +1880,37 @@ Elm.Main.make = function (_elm) {
                                                                                                                                                                               ,{ctor: "_Tuple2"
                                                                                                                                                                                ,_0: 10
                                                                                                                                                                                ,_1: -15}]))));
+   var view = function (space) {
+      return function () {
+         var bullets = A2($List.map,
+         function (b) {
+            return A2($Graphics$Collage.move,
+            {ctor: "_Tuple2"
+            ,_0: b.posx
+            ,_1: b.posy},
+            b.form);
+         },
+         space.bullets);
+         var player = $Graphics$Collage.rotate(space.player.dir)($Graphics$Collage.move({ctor: "_Tuple2"
+                                                                                        ,_0: space.player.posx
+                                                                                        ,_1: space.player.posy})(space.player.form));
+         var playingArea = A2($Graphics$Collage.collage,
+         640,
+         480)(A2($Basics._op["++"],
+         _L.fromArray([A2($Graphics$Collage.filled,
+                      $Color.black,
+                      A2($Graphics$Collage.rect,
+                      640,
+                      480))
+                      ,player]),
+         bullets));
+         return A4($Graphics$Element.container,
+         640,
+         480,
+         $Graphics$Element.middle,
+         playingArea);
+      }();
+   };
    var safediv = F2(function (x,
    y) {
       return _U.eq(y,
@@ -1898,64 +1931,6 @@ Elm.Main.make = function (_elm) {
                 ,top_x: _v0.posx - A2(safediv,
                 _v0.velx,
                 _v0.vely) * (_v0.posy - 240)};
-      }();
-   };
-   var view = function (space) {
-      return function () {
-         var cps = clippingPoints(space.player);
-         var player = $Graphics$Collage.rotate(space.player.dir)($Graphics$Collage.move({ctor: "_Tuple2"
-                                                                                        ,_0: space.player.posx
-                                                                                        ,_1: space.player.posy})(space.player.form));
-         var playingArea = A3($Graphics$Collage.collage,
-         640,
-         480,
-         _L.fromArray([A2($Graphics$Collage.filled,
-                      $Color.black,
-                      A2($Graphics$Collage.rect,
-                      640,
-                      480))
-                      ,player
-                      ,A2($Graphics$Collage.traced,
-                      $Graphics$Collage.solid($Color.white),
-                      A2($Graphics$Collage.segment,
-                      {ctor: "_Tuple2"
-                      ,_0: cps.top_x
-                      ,_1: 240},
-                      {ctor: "_Tuple2"
-                      ,_0: cps.top_x
-                      ,_1: 230}))
-                      ,A2($Graphics$Collage.traced,
-                      $Graphics$Collage.solid($Color.white),
-                      A2($Graphics$Collage.segment,
-                      {ctor: "_Tuple2"
-                      ,_0: -320
-                      ,_1: cps.left_y},
-                      {ctor: "_Tuple2"
-                      ,_0: -310
-                      ,_1: cps.left_y}))
-                      ,A2($Graphics$Collage.traced,
-                      $Graphics$Collage.solid($Color.white),
-                      A2($Graphics$Collage.segment,
-                      {ctor: "_Tuple2"
-                      ,_0: cps.bottom_x
-                      ,_1: -230},
-                      {ctor: "_Tuple2"
-                      ,_0: cps.bottom_x
-                      ,_1: -240}))
-                      ,A2($Graphics$Collage.traced,
-                      $Graphics$Collage.solid($Color.white),
-                      A2($Graphics$Collage.segment,
-                      {ctor: "_Tuple2"
-                      ,_0: 310
-                      ,_1: cps.right_y},
-                      {ctor: "_Tuple2"
-                      ,_0: 320
-                      ,_1: cps.right_y}))]));
-         return A4($Graphics$Element.container,
-         640,
-         480,
-         $Graphics$Element.middle,
-         playingArea);
       }();
    };
    var ClippingPoints = F4(function (a,
@@ -2003,7 +1978,7 @@ Elm.Main.make = function (_elm) {
          -240) < 0 ? _U.replace([["posx"
                                  ,cp.bottom_x]
                                 ,["posy",-240]],
-         ety) : _U.replace([["posx",-320]
+         ety) : _U.replace([["posx",320]
                            ,["posy",cp.right_y]],
          ety) : _U.cmp(ety.posy,
          -240) < 0 ? _U.cmp(cp.top_x,
@@ -2038,13 +2013,62 @@ Elm.Main.make = function (_elm) {
                          ,spaceship.dir - $Basics.toFloat(arrows.x) / 4]],
       spaceship);
    });
-   var update = F2(function (arrows,
+   var mkBullet = F5(function (x,
+   y,
+   source_vx,
+   source_vy,
+   dir) {
+      return {_: {}
+             ,form: sprBullet
+             ,posx: x
+             ,posy: y
+             ,ttl: 2
+             ,velx: 16 * $Basics.cos(dir) + source_vx
+             ,vely: 16 * $Basics.sin(dir) + source_vy};
+   });
+   var manageBullets = F3(function (shooting,
+   spaceship,
+   bullets) {
+      return function () {
+         var newBullets = $List.map(function (b) {
+            return _U.replace([["ttl"
+                               ,b.ttl - 1 / 30]],
+            b);
+         })(A2($List.filter,
+         function (b) {
+            return _U.cmp(b.ttl,0) > 0;
+         },
+         bullets));
+         return $Basics.not(shooting) ? newBullets : A2($List._op["::"],
+         A5(mkBullet,
+         spaceship.posx,
+         spaceship.posy,
+         spaceship.velx,
+         spaceship.vely,
+         spaceship.dir),
+         newBullets);
+      }();
+   });
+   var update = F2(function (controls,
    space) {
       return {_: {}
+             ,bullets: $List.map(function ($) {
+                return wrap(mechanics($));
+             })(A3(manageBullets,
+             controls.spacebar,
+             space.player,
+             space.bullets))
              ,player: wrap(mechanics(A2(thrust,
-             arrows,
+             controls.arrows,
              space.player)))};
    });
+   var mkSpaceship = {_: {}
+                     ,dir: 0
+                     ,form: sprSpaceship
+                     ,posx: 0
+                     ,posy: 0
+                     ,velx: 0
+                     ,vely: 0};
    var Entity = F5(function (a,
    b,
    c,
@@ -2058,26 +2082,34 @@ Elm.Main.make = function (_elm) {
       b,
       _U.insert("posx",a,e))));
    });
-   var mkSpaceship = {_: {}
-                     ,dir: 0
-                     ,form: sprSpaceship
-                     ,posx: 0
-                     ,posy: 0
-                     ,velx: 0
-                     ,vely: 0};
-   var Space = function (a) {
-      return {_: {},player: a};
-   };
+   var Space = F2(function (a,b) {
+      return {_: {}
+             ,bullets: b
+             ,player: a};
+   });
+   var Controls = F2(function (a,
+   b) {
+      return {_: {}
+             ,arrows: a
+             ,spacebar: b};
+   });
    var Arrowkeys = F2(function (a,
    b) {
       return {_: {},x: a,y: b};
    });
-   var input = A2($Signal.sampleOn,
-   $Time.fps(30),
-   $Keyboard.arrows);
+   var input = $Signal.sampleOn($Time.fps(30))(A3($Signal.map2,
+   F2(function (a,s) {
+      return {_: {}
+             ,arrows: a
+             ,spacebar: s};
+   }),
+   $Keyboard.arrows,
+   $Keyboard.space));
    var gameState = A3($Signal.foldp,
    update,
-   {_: {},player: mkSpaceship},
+   {_: {}
+   ,bullets: _L.fromArray([])
+   ,player: mkSpaceship},
    input);
    var main = A2($Signal._op["<~"],
    view,
@@ -2087,10 +2119,13 @@ Elm.Main.make = function (_elm) {
                       ,gameState: gameState
                       ,input: input
                       ,Arrowkeys: Arrowkeys
+                      ,Controls: Controls
                       ,Space: Space
-                      ,mkSpaceship: mkSpaceship
                       ,Entity: Entity
+                      ,mkSpaceship: mkSpaceship
+                      ,mkBullet: mkBullet
                       ,update: update
+                      ,manageBullets: manageBullets
                       ,thrust: thrust
                       ,mechanics: mechanics
                       ,wrap: wrap
@@ -2099,6 +2134,7 @@ Elm.Main.make = function (_elm) {
                       ,safediv: safediv
                       ,view: view
                       ,sprSpaceship: sprSpaceship
+                      ,sprBullet: sprBullet
                       ,sprRock: sprRock};
    return _elm.Main.values;
 };Elm.Maybe = Elm.Maybe || {};
