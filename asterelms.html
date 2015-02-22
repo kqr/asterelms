@@ -1911,7 +1911,7 @@ Elm.Main.make = function (_elm) {
                          ,_0: _v2._0 + $Basics.fst(_v0.offset)
                          ,_1: _v2._1 + $Basics.snd(_v0.offset)};}
                _U.badCase($moduleName,
-               "on line 188, column 20 to 50");
+               "on line 196, column 20 to 50");
             }();
          },
          _v0.stars);
@@ -2046,16 +2046,16 @@ Elm.Main.make = function (_elm) {
       return wrap(_U.replace([["posx"
                               ,ety.posx + ety.velx]
                              ,["posy",ety.posy + ety.vely]
-                             ,["velx",ety.velx * 0.95]
-                             ,["vely",ety.vely * 0.95]],
+                             ,["velx",ety.velx * 0.98]
+                             ,["vely",ety.vely * 0.98]],
       ety));
    };
    var thrust = F2(function (arrows,
    spaceship) {
       return _U.replace([["velx"
-                         ,spaceship.velx + 2 * $Basics.toFloat(arrows.y) * $Basics.cos(spaceship.dir)]
+                         ,spaceship.velx + 0.5 * $Basics.toFloat(arrows.y) * $Basics.cos(spaceship.dir)]
                         ,["vely"
-                         ,spaceship.vely + 2 * $Basics.toFloat(arrows.y) * $Basics.sin(spaceship.dir)]
+                         ,spaceship.vely + 0.5 * $Basics.toFloat(arrows.y) * $Basics.sin(spaceship.dir)]
                         ,["dir"
                          ,spaceship.dir - $Basics.toFloat(arrows.x) / 4]],
       spaceship);
@@ -2080,10 +2080,10 @@ Elm.Main.make = function (_elm) {
                                 ,_1: wrapped.posy};
                       }();}
                  _U.badCase($moduleName,
-                 "between lines 105 and 107");
+                 "between lines 112 and 114");
               }();}
          _U.badCase($moduleName,
-         "between lines 105 and 107");
+         "between lines 112 and 114");
       }();
    });
    var offsetBackground = F2(function (bg,
@@ -2091,9 +2091,9 @@ Elm.Main.make = function (_elm) {
       return function () {
          var oy = $Basics.snd(bg.offset);
          var ox = $Basics.fst(bg.offset);
-         var vy = spaceship.vely / 8;
+         var vy = spaceship.vely / 4;
          var newoy = 0 - vy;
-         var vx = spaceship.velx / 8;
+         var vx = spaceship.velx / 4;
          var newox = 0 - vx;
          var newstars = A2($List.map,
          function (_v16) {
@@ -2108,7 +2108,7 @@ Elm.Main.make = function (_elm) {
                     ,_0: _v16._0 + ox
                     ,_1: _v16._1 + oy});}
                _U.badCase($moduleName,
-               "on line 101, column 34 to 70");
+               "on line 108, column 34 to 70");
             }();
          },
          bg.stars);
@@ -2131,18 +2131,18 @@ Elm.Main.make = function (_elm) {
                                          ,form: sprBullet
                                          ,posx: _v20._0
                                          ,posy: _v20._1
-                                         ,ttl: 2
-                                         ,velx: 16 * $Basics.cos(dir) + _v21._0
-                                         ,vely: 16 * $Basics.sin(dir) + _v21._1};}
+                                         ,ttl: 1.2
+                                         ,velx: 20 * $Basics.cos(dir) + _v21._0
+                                         ,vely: 20 * $Basics.sin(dir) + _v21._1};}
                  _U.badCase($moduleName,
-                 "between lines 61 and 62");
+                 "between lines 61 and 63");
               }();}
          _U.badCase($moduleName,
-         "between lines 61 and 62");
+         "between lines 61 and 63");
       }();
    });
    var shootBullets = F4(function (shooting,
-   canShoot,
+   cooldown,
    spaceship,
    bullets) {
       return function () {
@@ -2156,7 +2156,8 @@ Elm.Main.make = function (_elm) {
          pos,
          vel,
          spaceship.dir);
-         return shooting && canShoot ? A2($List._op["::"],
+         return shooting && _U.cmp(cooldown,
+         0) < 1 ? A2($List._op["::"],
          newBullet,
          bullets) : bullets;
       }();
@@ -2169,7 +2170,7 @@ Elm.Main.make = function (_elm) {
              space.player)
              ,bullets: $List.map(mechanics)(A3(shootBullets,
              controls.spacebar,
-             true,
+             space.cooldown,
              space.player)($List.map(function (b) {
                 return _U.replace([["ttl"
                                    ,b.ttl - 1 / 30]],
@@ -2177,6 +2178,8 @@ Elm.Main.make = function (_elm) {
              })($List.filter(function (b) {
                 return _U.cmp(b.ttl,0) > 0;
              })(space.bullets))))
+             ,cooldown: _U.cmp(space.cooldown,
+             0) > 0 ? space.cooldown - 1 / 30 : controls.spacebar ? 0.4 : 0
              ,player: mechanics(thrust(controls.arrows)(space.player))};
    });
    var mkSpaceship = {_: {}
@@ -2204,7 +2207,7 @@ Elm.Main.make = function (_elm) {
          switch (_.ctor)
          {case "_Tuple2": return _._0;}
          _U.badCase($moduleName,
-         "on line 73, column 21 to 68");
+         "on line 74, column 21 to 68");
       }();
       return {_: {}
              ,background: {_: {}
@@ -2213,6 +2216,7 @@ Elm.Main.make = function (_elm) {
                                    ,_1: 0}
                           ,stars: coords}
              ,bullets: _L.fromArray([])
+             ,cooldown: 0
              ,player: mkSpaceship};
    }();
    var Entity = F5(function (a,
@@ -2228,12 +2232,14 @@ Elm.Main.make = function (_elm) {
       b,
       _U.insert("posx",a,e))));
    });
-   var Space = F3(function (a,
+   var Space = F4(function (a,
    b,
-   c) {
+   c,
+   d) {
       return {_: {}
              ,background: c
              ,bullets: b
+             ,cooldown: d
              ,player: a};
    });
    var Controls = F2(function (a,
@@ -2246,13 +2252,10 @@ Elm.Main.make = function (_elm) {
    b) {
       return {_: {},x: a,y: b};
    });
-   var input = $Signal.sampleOn($Time.fps(30))(A3($Signal.map2,
-   F2(function (a,s) {
-      return {_: {}
-             ,arrows: a
-             ,spacebar: s};
-   }),
-   $Keyboard.arrows,
+   var input = $Signal.sampleOn($Time.fps(30))(A2($Signal._op["~"],
+   A2($Signal._op["<~"],
+   Controls,
+   $Keyboard.arrows),
    $Keyboard.space));
    var gameState = A3($Signal.foldp,
    update,

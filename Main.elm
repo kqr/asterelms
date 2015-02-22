@@ -3,7 +3,7 @@ import Graphics.Element (Element, container, middle)
 import Color (black, white)
 import Keyboard
 import Signal
-import Signal ((<~), Signal, foldp)
+import Signal ((<~), (~), Signal, foldp)
 import Time
 import List
 import List ((::), map)
@@ -21,8 +21,7 @@ gameState = foldp update init input
 
 input : Signal Controls
 input = Signal.sampleOn (Time.fps 30) <|
-  Signal.map2 (\a s -> { arrows = a, spacebar = s })
-    Keyboard.arrows Keyboard.space
+  Controls <~ Keyboard.arrows ~ Keyboard.space
 
 type alias Arrowkeys = { x : Int, y : Int }
 type alias Controls = { arrows : Arrowkeys, spacebar : Bool }
@@ -36,6 +35,7 @@ type alias Space =
   { player : Spaceship
   , bullets : List Bullet
   , background : Starfield
+  , cooldown : Float
   }
 
 -- Anything suffering under classical mechanics is an entity
@@ -58,8 +58,9 @@ type alias Bullet = Entity { form : Form, ttl : Float }
 
 mkBullet : (Float, Float) -> (Float, Float) -> Float -> Bullet
 mkBullet (x, y) (source_vx, source_vy) dir =
-  { posx = x, posy = y, velx = 16 * cos dir + source_vx, vely = 16 * sin dir + source_vy
-  , form = sprBullet, ttl = 2
+  { posx = x, posy = y
+  , velx = 20 * cos dir + source_vx, vely = 20 * sin dir + source_vy
+  , form = sprBullet, ttl = 1.2
   }
 
 
@@ -74,26 +75,32 @@ init =
   in  { player = mkSpaceship
       , bullets = []
       , background = { offset = (0,0), stars = coords }
+      , cooldown = 0
       }
 
 update : Controls -> Space -> Space
 update controls space =
-  { player  = space.player
-                |> thrust controls.arrows
-                |> mechanics
-  , bullets = space.bullets
-                |> List.filter (\b -> b.ttl > 0)
-                |> map (\b -> { b | ttl <- b.ttl - 1/30 })
-                |> shootBullets controls.spacebar True space.player
-                |> map mechanics
+  { player     = space.player
+                   |> thrust controls.arrows
+                   |> mechanics
+  , bullets    = space.bullets
+                   |> List.filter (\b -> b.ttl > 0)
+                   |> map (\b -> { b | ttl <- b.ttl - 1/30 })
+                   |> shootBullets controls.spacebar space.cooldown space.player
+                   |> map mechanics
   , background = offsetBackground space.background space.player
+  , cooldown   = if space.cooldown > 0
+                    then space.cooldown - 1/30
+                    else if controls.spacebar
+                         then 0.4
+                         else 0
   }
 
 
 offsetBackground : Starfield -> Entity a -> Starfield
 offsetBackground bg spaceship =
-  let vx = spaceship.velx / 8
-      vy = spaceship.vely / 8
+  let vx = spaceship.velx / 4
+      vy = spaceship.vely / 4
       ox = fst bg.offset
       oy = snd bg.offset
       newox = -vx
@@ -106,12 +113,13 @@ wrapstars (vx, vy) (x, y) =
       wrapped = wrap fakeEntity
   in  (wrapped.posx, wrapped.posy)
 
-shootBullets : Bool -> Bool -> Spaceship -> List Bullet -> List Bullet
-shootBullets shooting canShoot spaceship bullets =
+
+shootBullets : Bool -> Float -> Spaceship -> List Bullet -> List Bullet
+shootBullets shooting cooldown spaceship bullets =
   let pos = (spaceship.posx, spaceship.posy)
       vel = (spaceship.velx, spaceship.vely)
       newBullet = mkBullet pos vel spaceship.dir
-  in  if shooting && canShoot
+  in  if shooting && cooldown <= 0
          then newBullet :: bullets
          else bullets
 
@@ -119,8 +127,8 @@ shootBullets shooting canShoot spaceship bullets =
 thrust : Arrowkeys -> Spaceship -> Spaceship
 thrust arrows spaceship =
   { spaceship |
-    velx <- spaceship.velx + 2 * toFloat arrows.y * cos spaceship.dir
-  , vely <- spaceship.vely + 2 * toFloat arrows.y * sin spaceship.dir
+    velx <- spaceship.velx + 0.5 * toFloat arrows.y * cos spaceship.dir
+  , vely <- spaceship.vely + 0.5 * toFloat arrows.y * sin spaceship.dir
   , dir <- spaceship.dir - toFloat arrows.x / 4
   }
 
@@ -129,8 +137,8 @@ mechanics ety =
   wrap { ety |
          posx <- ety.posx + ety.velx
        , posy <- ety.posy + ety.vely
-       , velx <- ety.velx * 0.95
-       , vely <- ety.vely * 0.95
+       , velx <- ety.velx * 0.98
+       , vely <- ety.vely * 0.98
        }
 
 
