@@ -8,6 +8,8 @@ import Time
 import List
 import List ((::), map)
 import Random
+import Char
+import Text
 
 
 -- These are currently constants. Should probably be something better later.
@@ -26,10 +28,10 @@ gameState = foldp update init input
 
 input : Signal Controls
 input = Signal.sampleOn (Time.fps frames) <|
-  Controls <~ Keyboard.arrows ~ Keyboard.space
+  Controls <~ Keyboard.arrows ~ Keyboard.isDown (Char.toCode 'x')
 
 type alias Arrowkeys = { x : Int, y : Int }
-type alias Controls = { arrows : Arrowkeys, spacebar : Bool }
+type alias Controls = { arrows : Arrowkeys, shoot : Bool }
 
 
 
@@ -92,12 +94,12 @@ update controls space =
   , bullets    = space.bullets
                    |> List.filter (\b -> b.ttl > 0)
                    |> map (\b -> { b | ttl <- b.ttl - 1/frames })
-                   |> shootBullets controls.spacebar space.cooldown space.player
+                   |> shootBullets controls.shoot space.cooldown space.player
                    |> map mechanics
   , stars = offsetBackground space.stars space.player
   , cooldown   = if space.cooldown > 0
                     then space.cooldown - 1/frames
-                    else if controls.spacebar
+                    else if controls.shoot
                          then 0.4
                          else 0
   }
@@ -184,8 +186,15 @@ view space =
       bullets = map (\b -> move (b.posx, b.posy) b.form) space.bullets
       environment = filled black (rect wwidth wheight)
                       :: map (\pos -> move pos sprStar) space.stars
+      help = "arrow keys to move, x to shoot"
+               |> Text.fromString
+               |> Text.color white
+               |> Text.leftAligned
+               |> toForm
+               |> move (-220, 230)
       playingArea = collage wwidth wheight <|
                       environment ++ [player] ++ bullets
+                      ++ [help]
   in  container wwidth wheight middle playingArea
 
 

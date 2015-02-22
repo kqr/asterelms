@@ -178,6 +178,43 @@ Elm.Basics.make = function (_elm) {
                         ,curry: curry
                         ,uncurry: uncurry};
    return _elm.Basics.values;
+};Elm.Char = Elm.Char || {};
+Elm.Char.make = function (_elm) {
+   "use strict";
+   _elm.Char = _elm.Char || {};
+   if (_elm.Char.values)
+   return _elm.Char.values;
+   var _op = {},
+   _N = Elm.Native,
+   _U = _N.Utils.make(_elm),
+   _L = _N.List.make(_elm),
+   _P = _N.Ports.make(_elm),
+   $moduleName = "Char",
+   $Native$Char = Elm.Native.Char.make(_elm);
+   var fromCode = $Native$Char.fromCode;
+   var toCode = $Native$Char.toCode;
+   var toLocaleLower = $Native$Char.toLocaleLower;
+   var toLocaleUpper = $Native$Char.toLocaleUpper;
+   var toLower = $Native$Char.toLower;
+   var toUpper = $Native$Char.toUpper;
+   var isHexDigit = $Native$Char.isHexDigit;
+   var isOctDigit = $Native$Char.isOctDigit;
+   var isDigit = $Native$Char.isDigit;
+   var isLower = $Native$Char.isLower;
+   var isUpper = $Native$Char.isUpper;
+   _elm.Char.values = {_op: _op
+                      ,isUpper: isUpper
+                      ,isLower: isLower
+                      ,isDigit: isDigit
+                      ,isOctDigit: isOctDigit
+                      ,isHexDigit: isHexDigit
+                      ,toUpper: toUpper
+                      ,toLower: toLower
+                      ,toLocaleUpper: toLocaleUpper
+                      ,toLocaleLower: toLocaleLower
+                      ,toCode: toCode
+                      ,fromCode: fromCode};
+   return _elm.Char.values;
 };Elm.Color = Elm.Color || {};
 Elm.Color.make = function (_elm) {
    "use strict";
@@ -1824,6 +1861,7 @@ Elm.Main.make = function (_elm) {
    _P = _N.Ports.make(_elm),
    $moduleName = "Main",
    $Basics = Elm.Basics.make(_elm),
+   $Char = Elm.Char.make(_elm),
    $Color = Elm.Color.make(_elm),
    $Graphics$Collage = Elm.Graphics.Collage.make(_elm),
    $Graphics$Element = Elm.Graphics.Element.make(_elm),
@@ -1831,6 +1869,7 @@ Elm.Main.make = function (_elm) {
    $List = Elm.List.make(_elm),
    $Random = Elm.Random.make(_elm),
    $Signal = Elm.Signal.make(_elm),
+   $Text = Elm.Text.make(_elm),
    $Time = Elm.Time.make(_elm);
    var sprRock = $Graphics$Collage.outlined($Graphics$Collage.solid($Color.white))($Graphics$Collage.polygon(_L.fromArray([{ctor: "_Tuple2"
                                                                                                                            ,_0: -4
@@ -1900,86 +1939,11 @@ Elm.Main.make = function (_elm) {
              ,offset: a
              ,stars: b};
    });
-   var absoluteStarpos = function (_v0) {
-      return function () {
-         return A2($List.map,
-         function (_v2) {
-            return function () {
-               switch (_v2.ctor)
-               {case "_Tuple2":
-                  return {ctor: "_Tuple2"
-                         ,_0: _v2._0 + $Basics.fst(_v0.offset)
-                         ,_1: _v2._1 + $Basics.snd(_v0.offset)};}
-               _U.badCase($moduleName,
-               "on line 196, column 20 to 50");
-            }();
-         },
-         _v0.stars);
-      }();
-   };
-   var view = function (space) {
-      return function () {
-         var environment = A2($List._op["::"],
-         A2($Graphics$Collage.filled,
-         $Color.black,
-         A2($Graphics$Collage.rect,
-         640,
-         480)),
-         A2($List.map,
-         function (pos) {
-            return A2($Graphics$Collage.move,
-            pos,
-            sprStar);
-         },
-         absoluteStarpos(space.background)));
-         var bullets = A2($List.map,
-         function (b) {
-            return A2($Graphics$Collage.move,
-            {ctor: "_Tuple2"
-            ,_0: b.posx
-            ,_1: b.posy},
-            b.form);
-         },
-         space.bullets);
-         var player = $Graphics$Collage.rotate(space.player.dir)($Graphics$Collage.move({ctor: "_Tuple2"
-                                                                                        ,_0: space.player.posx
-                                                                                        ,_1: space.player.posy})(space.player.form));
-         var playingArea = A2($Graphics$Collage.collage,
-         640,
-         480)(A2($Basics._op["++"],
-         environment,
-         A2($Basics._op["++"],
-         _L.fromArray([player]),
-         bullets)));
-         return A4($Graphics$Element.container,
-         640,
-         480,
-         $Graphics$Element.middle,
-         playingArea);
-      }();
-   };
    var safediv = F2(function (x,
    y) {
       return _U.eq(y,
       0) ? 0 : x / y;
    });
-   var clippingPoints = function (_v6) {
-      return function () {
-         return {_: {}
-                ,bottom_x: _v6.posx - A2(safediv,
-                _v6.velx,
-                _v6.vely) * (_v6.posy + 240)
-                ,left_y: _v6.posy - A2(safediv,
-                _v6.vely,
-                _v6.velx) * (_v6.posx + 320)
-                ,right_y: _v6.posy - A2(safediv,
-                _v6.vely,
-                _v6.velx) * (_v6.posx - 320)
-                ,top_x: _v6.posx - A2(safediv,
-                _v6.velx,
-                _v6.vely) * (_v6.posy - 240)};
-      }();
-   };
    var ClippingPoints = F4(function (a,
    b,
    c,
@@ -1990,66 +1954,6 @@ Elm.Main.make = function (_elm) {
              ,right_y: d
              ,top_x: a};
    });
-   var wrap = function (ety) {
-      return function () {
-         var cp = clippingPoints(ety);
-         return _U.cmp(ety.posx,
-         320) > 0 ? _U.cmp(cp.left_y,
-         240) > 0 ? _U.replace([["posx"
-                                ,cp.top_x]
-                               ,["posy",240]],
-         ety) : _U.cmp(cp.left_y,
-         -240) < 0 ? _U.replace([["posx"
-                                 ,cp.bottom_x]
-                                ,["posy",-240]],
-         ety) : _U.replace([["posx",-320]
-                           ,["posy",cp.left_y]],
-         ety) : _U.cmp(ety.posy,
-         240) > 0 ? _U.cmp(cp.bottom_x,
-         320) > 0 ? _U.replace([["posx"
-                                ,320]
-                               ,["posy",cp.right_y]],
-         ety) : _U.cmp(cp.bottom_x,
-         -320) < 0 ? _U.replace([["posx"
-                                 ,-320]
-                                ,["posy",cp.left_y]],
-         ety) : _U.replace([["posx"
-                            ,cp.bottom_x]
-                           ,["posy",-240]],
-         ety) : _U.cmp(ety.posx,
-         -320) < 0 ? _U.cmp(cp.right_y,
-         240) > 0 ? _U.replace([["posx"
-                                ,cp.top_x]
-                               ,["posy",240]],
-         ety) : _U.cmp(cp.right_y,
-         -240) < 0 ? _U.replace([["posx"
-                                 ,cp.bottom_x]
-                                ,["posy",-240]],
-         ety) : _U.replace([["posx",320]
-                           ,["posy",cp.right_y]],
-         ety) : _U.cmp(ety.posy,
-         -240) < 0 ? _U.cmp(cp.top_x,
-         320) > 0 ? _U.replace([["posx"
-                                ,320]
-                               ,["posy",cp.right_y]],
-         ety) : _U.cmp(cp.top_x,
-         -320) < 0 ? _U.replace([["posx"
-                                 ,-320]
-                                ,["posy",cp.left_y]],
-         ety) : _U.replace([["posx"
-                            ,cp.top_x]
-                           ,["posy",240]],
-         ety) : ety;
-      }();
-   };
-   var mechanics = function (ety) {
-      return wrap(_U.replace([["posx"
-                              ,ety.posx + ety.velx]
-                             ,["posy",ety.posy + ety.vely]
-                             ,["velx",ety.velx * 0.98]
-                             ,["vely",ety.vely * 0.98]],
-      ety));
-   };
    var thrust = F2(function (arrows,
    spaceship) {
       return _U.replace([["velx"
@@ -2060,85 +1964,26 @@ Elm.Main.make = function (_elm) {
                          ,spaceship.dir - $Basics.toFloat(arrows.x) / 4]],
       spaceship);
    });
-   var wrapstars = F2(function (_v8,
-   _v9) {
-      return function () {
-         switch (_v9.ctor)
-         {case "_Tuple2":
-            return function () {
-                 switch (_v8.ctor)
-                 {case "_Tuple2":
-                    return function () {
-                         var fakeEntity = {_: {}
-                                          ,posx: _v9._0
-                                          ,posy: _v9._1
-                                          ,velx: _v8._0
-                                          ,vely: _v8._1};
-                         var wrapped = wrap(fakeEntity);
-                         return {ctor: "_Tuple2"
-                                ,_0: wrapped.posx
-                                ,_1: wrapped.posy};
-                      }();}
-                 _U.badCase($moduleName,
-                 "between lines 112 and 114");
-              }();}
-         _U.badCase($moduleName,
-         "between lines 112 and 114");
-      }();
-   });
-   var offsetBackground = F2(function (bg,
-   spaceship) {
-      return function () {
-         var oy = $Basics.snd(bg.offset);
-         var ox = $Basics.fst(bg.offset);
-         var vy = spaceship.vely / 4;
-         var newoy = 0 - vy;
-         var vx = spaceship.velx / 4;
-         var newox = 0 - vx;
-         var newstars = A2($List.map,
-         function (_v16) {
-            return function () {
-               switch (_v16.ctor)
-               {case "_Tuple2":
-                  return A2(wrapstars,
-                    {ctor: "_Tuple2"
-                    ,_0: 0 - vx
-                    ,_1: 0 - vy},
-                    {ctor: "_Tuple2"
-                    ,_0: _v16._0 + ox
-                    ,_1: _v16._1 + oy});}
-               _U.badCase($moduleName,
-               "on line 108, column 34 to 70");
-            }();
-         },
-         bg.stars);
-         return {_: {}
-                ,offset: {ctor: "_Tuple2"
-                         ,_0: newox
-                         ,_1: newoy}
-                ,stars: newstars};
-      }();
-   });
-   var mkBullet = F3(function (_v20,
-   _v21,
+   var mkBullet = F3(function (_v0,
+   _v1,
    dir) {
       return function () {
-         switch (_v21.ctor)
+         switch (_v1.ctor)
          {case "_Tuple2":
             return function () {
-                 switch (_v20.ctor)
+                 switch (_v0.ctor)
                  {case "_Tuple2": return {_: {}
                                          ,form: sprBullet
-                                         ,posx: _v20._0
-                                         ,posy: _v20._1
+                                         ,posx: _v0._0
+                                         ,posy: _v0._1
                                          ,ttl: 1.2
-                                         ,velx: 20 * $Basics.cos(dir) + _v21._0
-                                         ,vely: 20 * $Basics.sin(dir) + _v21._1};}
+                                         ,velx: 20 * $Basics.cos(dir) + _v1._0
+                                         ,vely: 20 * $Basics.sin(dir) + _v1._1};}
                  _U.badCase($moduleName,
-                 "between lines 61 and 63");
+                 "between lines 68 and 70");
               }();}
          _U.badCase($moduleName,
-         "between lines 61 and 63");
+         "between lines 68 and 70");
       }();
    });
    var shootBullets = F4(function (shooting,
@@ -2162,26 +2007,6 @@ Elm.Main.make = function (_elm) {
          bullets) : bullets;
       }();
    });
-   var update = F2(function (controls,
-   space) {
-      return {_: {}
-             ,background: A2(offsetBackground,
-             space.background,
-             space.player)
-             ,bullets: $List.map(mechanics)(A3(shootBullets,
-             controls.spacebar,
-             space.cooldown,
-             space.player)($List.map(function (b) {
-                return _U.replace([["ttl"
-                                   ,b.ttl - 1 / 30]],
-                b);
-             })($List.filter(function (b) {
-                return _U.cmp(b.ttl,0) > 0;
-             })(space.bullets))))
-             ,cooldown: _U.cmp(space.cooldown,
-             0) > 0 ? space.cooldown - 1 / 30 : controls.spacebar ? 0.4 : 0
-             ,player: mechanics(thrust(controls.arrows)(space.player))};
-   });
    var mkSpaceship = {_: {}
                      ,dir: 0
                      ,form: sprSpaceship
@@ -2189,36 +2014,6 @@ Elm.Main.make = function (_elm) {
                      ,posy: 0
                      ,velx: 0
                      ,vely: 0};
-   var init = function () {
-      var randfr = function (n) {
-         return A2($Random.$float,
-         0 - n,
-         n);
-      };
-      var coordGen = A2($Random.list,
-      200,
-      A2($Random.pair,
-      randfr(320),
-      randfr(240)));
-      var _ = A2($Random.generate,
-      coordGen,
-      $Random.initialSeed(42));
-      var coords = function () {
-         switch (_.ctor)
-         {case "_Tuple2": return _._0;}
-         _U.badCase($moduleName,
-         "on line 74, column 21 to 68");
-      }();
-      return {_: {}
-             ,background: {_: {}
-                          ,offset: {ctor: "_Tuple2"
-                                   ,_0: 0
-                                   ,_1: 0}
-                          ,stars: coords}
-             ,bullets: _L.fromArray([])
-             ,cooldown: 0
-             ,player: mkSpaceship};
-   }();
    var Entity = F5(function (a,
    b,
    c,
@@ -2237,34 +2032,245 @@ Elm.Main.make = function (_elm) {
    c,
    d) {
       return {_: {}
-             ,background: c
              ,bullets: b
              ,cooldown: d
-             ,player: a};
+             ,player: a
+             ,stars: c};
    });
    var Controls = F2(function (a,
    b) {
       return {_: {}
              ,arrows: a
-             ,spacebar: b};
+             ,shoot: b};
    });
    var Arrowkeys = F2(function (a,
    b) {
       return {_: {},x: a,y: b};
    });
-   var input = $Signal.sampleOn($Time.fps(30))(A2($Signal._op["~"],
+   var frames = 30;
+   var input = $Signal.sampleOn($Time.fps(frames))(A2($Signal._op["~"],
    A2($Signal._op["<~"],
    Controls,
    $Keyboard.arrows),
-   $Keyboard.space));
+   $Keyboard.isDown($Char.toCode(_U.chr("x")))));
+   var wheight = 480;
+   var wwidth = 640;
+   var init = function () {
+      var randfr = function (n) {
+         return A2($Random.$float,
+         0 - n,
+         n);
+      };
+      var coordGen = A2($Random.list,
+      200,
+      A2($Random.pair,
+      randfr(wwidth / 2),
+      randfr(wheight / 2)));
+      var _ = A2($Random.generate,
+      coordGen,
+      $Random.initialSeed(42));
+      var coords = function () {
+         switch (_.ctor)
+         {case "_Tuple2": return _._0;}
+         _U.badCase($moduleName,
+         "on line 82, column 21 to 68");
+      }();
+      return {_: {}
+             ,bullets: _L.fromArray([])
+             ,cooldown: 0
+             ,player: mkSpaceship
+             ,stars: coords};
+   }();
+   var clippingPoints = function (_v11) {
+      return function () {
+         return {_: {}
+                ,bottom_x: _v11.posx - A2(safediv,
+                _v11.velx,
+                _v11.vely) * (_v11.posy + wheight / 2)
+                ,left_y: _v11.posy - A2(safediv,
+                _v11.vely,
+                _v11.velx) * (_v11.posx + wwidth / 2)
+                ,right_y: _v11.posy - A2(safediv,
+                _v11.vely,
+                _v11.velx) * (_v11.posx - wwidth / 2)
+                ,top_x: _v11.posx - A2(safediv,
+                _v11.velx,
+                _v11.vely) * (_v11.posy - wheight / 2)};
+      }();
+   };
+   var wrap = function (ety) {
+      return function () {
+         var cp = clippingPoints(ety);
+         return _U.cmp(ety.posx,
+         wwidth / 2) > 0 ? _U.cmp(cp.left_y,
+         wheight / 2) > 0 ? _U.replace([["posx"
+                                        ,cp.top_x]
+                                       ,["posy",wheight / 2]],
+         ety) : _U.cmp(cp.left_y,
+         (0 - wheight) / 2) < 0 ? _U.replace([["posx"
+                                              ,cp.bottom_x]
+                                             ,["posy",(0 - wheight) / 2]],
+         ety) : _U.replace([["posx"
+                            ,(0 - wwidth) / 2]
+                           ,["posy",cp.left_y]],
+         ety) : _U.cmp(ety.posy,
+         wheight / 2) > 0 ? _U.cmp(cp.bottom_x,
+         wwidth / 2) > 0 ? _U.replace([["posx"
+                                       ,wwidth / 2]
+                                      ,["posy",cp.right_y]],
+         ety) : _U.cmp(cp.bottom_x,
+         (0 - wwidth) / 2) < 0 ? _U.replace([["posx"
+                                             ,(0 - wwidth) / 2]
+                                            ,["posy",cp.left_y]],
+         ety) : _U.replace([["posx"
+                            ,cp.bottom_x]
+                           ,["posy",(0 - wheight) / 2]],
+         ety) : _U.cmp(ety.posx,
+         (0 - wwidth) / 2) < 0 ? _U.cmp(cp.right_y,
+         wheight / 2) > 0 ? _U.replace([["posx"
+                                        ,cp.top_x]
+                                       ,["posy",wheight / 2]],
+         ety) : _U.cmp(cp.right_y,
+         (0 - wheight) / 2) < 0 ? _U.replace([["posx"
+                                              ,cp.bottom_x]
+                                             ,["posy",(0 - wheight) / 2]],
+         ety) : _U.replace([["posx"
+                            ,wwidth / 2]
+                           ,["posy",cp.right_y]],
+         ety) : _U.cmp(ety.posy,
+         (0 - wheight) / 2) < 0 ? _U.cmp(cp.top_x,
+         wwidth / 2) > 0 ? _U.replace([["posx"
+                                       ,wwidth / 2]
+                                      ,["posy",cp.right_y]],
+         ety) : _U.cmp(cp.top_x,
+         (0 - wwidth) / 2) < 0 ? _U.replace([["posx"
+                                             ,(0 - wwidth) / 2]
+                                            ,["posy",cp.left_y]],
+         ety) : _U.replace([["posx"
+                            ,cp.top_x]
+                           ,["posy",wheight / 2]],
+         ety) : ety;
+      }();
+   };
+   var wrapstars = F2(function (_v13,
+   _v14) {
+      return function () {
+         switch (_v14.ctor)
+         {case "_Tuple2":
+            return function () {
+                 switch (_v13.ctor)
+                 {case "_Tuple2":
+                    return function () {
+                         var fakeEntity = {_: {}
+                                          ,posx: _v14._0 - _v13._0
+                                          ,posy: _v14._1 - _v13._1
+                                          ,velx: 0 - _v13._0
+                                          ,vely: 0 - _v13._1};
+                         var wrapped = wrap(fakeEntity);
+                         return {ctor: "_Tuple2"
+                                ,_0: wrapped.posx
+                                ,_1: wrapped.posy};
+                      }();}
+                 _U.badCase($moduleName,
+                 "between lines 113 and 115");
+              }();}
+         _U.badCase($moduleName,
+         "between lines 113 and 115");
+      }();
+   });
+   var offsetBackground = F2(function (stars,
+   spaceship) {
+      return A2($List.map,
+      wrapstars({ctor: "_Tuple2"
+                ,_0: spaceship.velx / 4
+                ,_1: spaceship.vely / 4}),
+      stars);
+   });
+   var mechanics = function (ety) {
+      return wrap(_U.replace([["posx"
+                              ,ety.posx + ety.velx]
+                             ,["posy",ety.posy + ety.vely]
+                             ,["velx",ety.velx * 0.98]
+                             ,["vely",ety.vely * 0.98]],
+      ety));
+   };
+   var update = F2(function (controls,
+   space) {
+      return {_: {}
+             ,bullets: $List.map(mechanics)(A3(shootBullets,
+             controls.shoot,
+             space.cooldown,
+             space.player)($List.map(function (b) {
+                return _U.replace([["ttl"
+                                   ,b.ttl - 1 / frames]],
+                b);
+             })($List.filter(function (b) {
+                return _U.cmp(b.ttl,0) > 0;
+             })(space.bullets))))
+             ,cooldown: _U.cmp(space.cooldown,
+             0) > 0 ? space.cooldown - 1 / frames : controls.shoot ? 0.4 : 0
+             ,player: mechanics(thrust(controls.arrows)(space.player))
+             ,stars: A2(offsetBackground,
+             space.stars,
+             space.player)};
+   });
    var gameState = A3($Signal.foldp,
    update,
    init,
    input);
+   var view = function (space) {
+      return function () {
+         var help = $Graphics$Collage.move({ctor: "_Tuple2"
+                                           ,_0: -220
+                                           ,_1: 230})($Graphics$Collage.toForm($Text.leftAligned($Text.color($Color.white)($Text.fromString("arrow keys to move, x to shoot")))));
+         var environment = A2($List._op["::"],
+         A2($Graphics$Collage.filled,
+         $Color.black,
+         A2($Graphics$Collage.rect,
+         wwidth,
+         wheight)),
+         A2($List.map,
+         function (pos) {
+            return A2($Graphics$Collage.move,
+            pos,
+            sprStar);
+         },
+         space.stars));
+         var bullets = A2($List.map,
+         function (b) {
+            return A2($Graphics$Collage.move,
+            {ctor: "_Tuple2"
+            ,_0: b.posx
+            ,_1: b.posy},
+            b.form);
+         },
+         space.bullets);
+         var player = $Graphics$Collage.rotate(space.player.dir)($Graphics$Collage.move({ctor: "_Tuple2"
+                                                                                        ,_0: space.player.posx
+                                                                                        ,_1: space.player.posy})(space.player.form));
+         var playingArea = A2($Graphics$Collage.collage,
+         wwidth,
+         wheight)(A2($Basics._op["++"],
+         environment,
+         A2($Basics._op["++"],
+         _L.fromArray([player]),
+         A2($Basics._op["++"],
+         bullets,
+         _L.fromArray([help])))));
+         return A4($Graphics$Element.container,
+         wwidth,
+         wheight,
+         $Graphics$Element.middle,
+         playingArea);
+      }();
+   };
    var main = A2($Signal._op["<~"],
    view,
    gameState);
    _elm.Main.values = {_op: _op
+                      ,wwidth: wwidth
+                      ,wheight: wheight
+                      ,frames: frames
                       ,main: main
                       ,gameState: gameState
                       ,input: input
@@ -2286,7 +2292,6 @@ Elm.Main.make = function (_elm) {
                       ,clippingPoints: clippingPoints
                       ,safediv: safediv
                       ,view: view
-                      ,absoluteStarpos: absoluteStarpos
                       ,Starfield: Starfield
                       ,sprSpaceship: sprSpaceship
                       ,sprBullet: sprBullet
@@ -2483,6 +2488,37 @@ Elm.Native.Basics.make = function(elm) {
   };
 
   return elm.Native.Basics.values = basics;
+};
+Elm.Native.Char = {};
+Elm.Native.Char.make = function(elm) {
+    elm.Native = elm.Native || {};
+    elm.Native.Char = elm.Native.Char || {};
+    if (elm.Native.Char.values) return elm.Native.Char.values;
+
+    var Utils = Elm.Native.Utils.make(elm);
+
+    function isBetween(lo,hi) { return function(chr) {
+	var c = chr.charCodeAt(0);
+	return lo <= c && c <= hi;
+    };
+                              }
+    var isDigit = isBetween('0'.charCodeAt(0),'9'.charCodeAt(0));
+    var chk1 = isBetween('a'.charCodeAt(0),'f'.charCodeAt(0));
+    var chk2 = isBetween('A'.charCodeAt(0),'F'.charCodeAt(0));
+
+    return elm.Native.Char.values = {
+        fromCode : function(c) { return String.fromCharCode(c); },
+        toCode   : function(c) { return c.toUpperCase().charCodeAt(0); },
+        toUpper  : function(c) { return Utils.chr(c.toUpperCase()); },
+        toLower  : function(c) { return Utils.chr(c.toLowerCase()); },
+        toLocaleUpper : function(c) { return Utils.chr(c.toLocaleUpperCase()); },
+        toLocaleLower : function(c) { return Utils.chr(c.toLocaleLowerCase()); },
+        isLower    : isBetween('a'.charCodeAt(0),'z'.charCodeAt(0)),
+        isUpper    : isBetween('A'.charCodeAt(0),'Z'.charCodeAt(0)),
+        isDigit    : isDigit,
+        isOctDigit : isBetween('0'.charCodeAt(0),'7'.charCodeAt(0)),
+        isHexDigit : function(c) { return isDigit(c) || chk1(c) || chk2(c); }
+    };
 };
 Elm.Native.Color = {};
 Elm.Native.Color.make = function(elm) {
@@ -4961,6 +4997,177 @@ Elm.Native.Signal.make = function(localRuntime) {
     subscribe: subscribe
   };
 };
+Elm.Native.Text = {};
+Elm.Native.Text.make = function(elm) {
+    elm.Native = elm.Native || {};
+    elm.Native.Text = elm.Native.Text || {};
+    if (elm.Native.Text.values) return elm.Native.Text.values;
+
+    var toCss = Elm.Native.Color.make(elm).toCss;
+    var Element = Elm.Graphics.Element.make(elm);
+    var NativeElement = Elm.Native.Graphics.Element.make(elm);
+    var List = Elm.Native.List.make(elm);
+    var Utils = Elm.Native.Utils.make(elm);
+
+    function makeSpaces(s) {
+        if (s.length == 0) { return s; }
+        var arr = s.split('');
+        if (arr[0] == ' ') { arr[0] = "&nbsp;" }      
+        for (var i = arr.length; --i; ) {
+            if (arr[i][0] == ' ' && arr[i-1] == ' ') {
+                arr[i-1] = arr[i-1] + arr[i];
+                arr[i] = '';
+            }
+        }
+        for (var i = arr.length; i--; ) {
+            if (arr[i].length > 1 && arr[i][0] == ' ') {
+                var spaces = arr[i].split('');
+                for (var j = spaces.length - 2; j >= 0; j -= 2) {
+                    spaces[j] = '&nbsp;';
+                }
+                arr[i] = spaces.join('');
+            }
+        }
+        arr = arr.join('');
+        if (arr[arr.length-1] === " ") {
+            return arr.slice(0,-1) + '&nbsp;';
+        }
+        return arr;
+    }
+
+    function properEscape(str) {
+        if (str.length == 0) return str;
+        str = str //.replace(/&/g,  "&#38;")
+            .replace(/"/g,  '&#34;')
+            .replace(/'/g,  "&#39;")
+            .replace(/</g,  "&#60;")
+            .replace(/>/g,  "&#62;")
+            .replace(/\n/g, "<br/>");
+        var arr = str.split('<br/>');
+        for (var i = arr.length; i--; ) {
+            arr[i] = makeSpaces(arr[i]);
+        }
+        return arr.join('<br/>');
+    }
+
+    function fromString(str) {
+        return Utils.txt(properEscape(str));
+    }
+
+    function append(xs, ys) {
+        return Utils.txt(Utils.makeText(xs) + Utils.makeText(ys));
+    }
+
+    // conversions from Elm values to CSS
+    function toTypefaces(list) {
+        var typefaces = List.toArray(list);
+        for (var i = typefaces.length; i--; ) {
+            var typeface = typefaces[i];
+            if (typeface.indexOf(' ') > -1) {
+                typefaces[i] = "'" + typeface + "'";
+            }
+        }
+        return typefaces.join(',');
+    }
+    function toLine(line) {
+        var ctor = line.ctor;
+        return ctor === 'Under' ? 'underline' :
+               ctor === 'Over'  ? 'overline'  : 'line-through';
+    }
+
+    // setting styles of Text
+    function style(style, text) {
+        var newText = '<span style="color:' + toCss(style.color) + ';'
+        if (style.typeface.ctor !== '[]') {
+            newText += 'font-family:' + toTypefaces(style.typeface) + ';'
+        }
+        if (style.height.ctor !== "Nothing") {
+            newText += 'font-size:' + style.height._0 + 'px;';
+        }
+        if (style.bold) {
+            newText += 'font-weight:bold;';
+        }
+        if (style.italic) {
+            newText += 'font-style:italic;';
+        }
+        if (style.line.ctor !== 'Nothing') {
+            newText += 'text-decoration:' + toLine(style.line._0) + ';';
+        }
+        newText += '">' + Utils.makeText(text) + '</span>'
+        return Utils.txt(newText);
+    }
+    function height(px, text) {
+        return { style: 'font-size:' + px + 'px;', text:text }
+    }
+    function typeface(names, text) {
+        return { style: 'font-family:' + toTypefaces(names) + ';', text:text }
+    }
+    function monospace(text) {
+        return { style: 'font-family:monospace;', text:text }
+    }
+    function italic(text) {
+        return { style: 'font-style:italic;', text:text }
+    }
+    function bold(text) {
+        return { style: 'font-weight:bold;', text:text }
+    }
+    function link(href, text) {
+        return { href: fromString(href), text:text };
+    }
+    function line(line, text) {
+        return { style: 'text-decoration:' + toLine(line) + ';', text:text };
+    }
+
+    function color(color, text) {
+        return { style: 'color:' + toCss(color) + ';', text:text };
+    }
+
+    function block(align) {
+        return function(text) {
+            var raw = {
+                ctor :'RawHtml',
+                html : Utils.makeText(text),
+                align: align
+            };
+            var pos = A2(NativeElement.htmlHeight, 0, raw);
+            return A3(Element.newElement, pos._0, pos._1, raw);
+        }
+    }
+
+    function markdown(text) {
+        var raw = {
+            ctor:'RawHtml',
+            html: text,
+            align: null
+        };
+        var pos = A2(NativeElement.htmlHeight, 0, raw);
+        return A3(Element.newElement, pos._0, pos._1, raw);
+    }
+
+    return elm.Native.Text.values = {
+        fromString: fromString,
+        append: F2(append),
+
+        height : F2(height),
+        italic : italic,
+        bold : bold,
+        line : F2(line),
+        monospace : monospace,
+        typeface : F2(typeface),
+        color : F2(color),
+        link : F2(link),
+        style : F2(style),
+
+        leftAligned  : block('left'),
+        rightAligned : block('right'),
+        centered     : block('center'),
+        justified    : block('justify'),
+        markdown     : markdown,
+
+        toTypefaces:toTypefaces,
+        toLine:toLine
+    };
+};
 Elm.Native.Time = {};
 Elm.Native.Time.make = function(elm) {
 
@@ -6057,6 +6264,113 @@ Elm.Signal.make = function (_elm) {
                         ,send: send
                         ,subscribe: subscribe};
    return _elm.Signal.values;
+};Elm.Text = Elm.Text || {};
+Elm.Text.make = function (_elm) {
+   "use strict";
+   _elm.Text = _elm.Text || {};
+   if (_elm.Text.values)
+   return _elm.Text.values;
+   var _op = {},
+   _N = Elm.Native,
+   _U = _N.Utils.make(_elm),
+   _L = _N.List.make(_elm),
+   _P = _N.Ports.make(_elm),
+   $moduleName = "Text",
+   $Basics = Elm.Basics.make(_elm),
+   $Color = Elm.Color.make(_elm),
+   $Graphics$Element = Elm.Graphics.Element.make(_elm),
+   $List = Elm.List.make(_elm),
+   $Maybe = Elm.Maybe.make(_elm),
+   $Native$Text = Elm.Native.Text.make(_elm);
+   var markdown = $Native$Text.markdown;
+   var justified = $Native$Text.justified;
+   var centered = $Native$Text.centered;
+   var rightAligned = $Native$Text.rightAligned;
+   var leftAligned = $Native$Text.leftAligned;
+   var line = $Native$Text.line;
+   var italic = $Native$Text.italic;
+   var bold = $Native$Text.bold;
+   var color = $Native$Text.color;
+   var height = $Native$Text.height;
+   var link = $Native$Text.link;
+   var monospace = $Native$Text.monospace;
+   var typeface = $Native$Text.typeface;
+   var style = $Native$Text.style;
+   var append = $Native$Text.append;
+   var fromString = $Native$Text.fromString;
+   var empty = fromString("");
+   var concat = function (texts) {
+      return A3($List.foldr,
+      append,
+      empty,
+      texts);
+   };
+   var join = F2(function (seperator,
+   texts) {
+      return concat(A2($List.intersperse,
+      seperator,
+      texts));
+   });
+   var plainText = function (str) {
+      return leftAligned(fromString(str));
+   };
+   var asText = function (value) {
+      return leftAligned(monospace(fromString($Basics.toString(value))));
+   };
+   var defaultStyle = {_: {}
+                      ,bold: false
+                      ,color: $Color.black
+                      ,height: $Maybe.Nothing
+                      ,italic: false
+                      ,line: $Maybe.Nothing
+                      ,typeface: _L.fromArray([])};
+   var Style = F6(function (a,
+   b,
+   c,
+   d,
+   e,
+   f) {
+      return {_: {}
+             ,bold: d
+             ,color: c
+             ,height: b
+             ,italic: e
+             ,line: f
+             ,typeface: a};
+   });
+   var Through = {ctor: "Through"};
+   var Over = {ctor: "Over"};
+   var Under = {ctor: "Under"};
+   var Text = {ctor: "Text"};
+   _elm.Text.values = {_op: _op
+                      ,Text: Text
+                      ,Under: Under
+                      ,Over: Over
+                      ,Through: Through
+                      ,Style: Style
+                      ,defaultStyle: defaultStyle
+                      ,fromString: fromString
+                      ,empty: empty
+                      ,append: append
+                      ,concat: concat
+                      ,join: join
+                      ,style: style
+                      ,typeface: typeface
+                      ,monospace: monospace
+                      ,link: link
+                      ,height: height
+                      ,color: color
+                      ,bold: bold
+                      ,italic: italic
+                      ,line: line
+                      ,leftAligned: leftAligned
+                      ,rightAligned: rightAligned
+                      ,centered: centered
+                      ,justified: justified
+                      ,plainText: plainText
+                      ,markdown: markdown
+                      ,asText: asText};
+   return _elm.Text.values;
 };Elm.Time = Elm.Time || {};
 Elm.Time.make = function (_elm) {
    "use strict";
