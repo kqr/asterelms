@@ -1,5 +1,5 @@
 import Graphics.Collage (..)
-import Graphics.Element (Element, container, middle)
+import Graphics.Element (Element, container, middle, sizeOf)
 import Color (black, white)
 import Keyboard
 import Signal
@@ -186,12 +186,15 @@ view space =
       bullets = map (\b -> move (b.posx, b.posy) b.form) space.bullets
       environment = filled black (rect wwidth wheight)
                       :: map (\pos -> move pos sprStar) space.stars
-      help = "arrow keys to move, x to shoot"
-               |> Text.fromString
-               |> Text.color white
-               |> Text.leftAligned
+      helpText = "arrow keys to move, x to shoot"
+                   |> Text.fromString
+                   |> Text.color white
+                   |> Text.leftAligned
+      helpSize = sizeOf helpText
+      help = helpText
                |> toForm
-               |> move (-220, 230)
+               |> move ( toFloat (fst helpSize) / 2 - 316
+                       , 240 - toFloat (snd helpSize) / 2)
       playingArea = collage wwidth wheight <|
                       environment ++ [player] ++ bullets
                       ++ [help]

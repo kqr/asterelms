@@ -2220,9 +2220,11 @@ Elm.Main.make = function (_elm) {
    input);
    var view = function (space) {
       return function () {
+         var helpText = $Text.leftAligned($Text.color($Color.white)($Text.fromString("arrow keys to move, x to shoot")));
+         var helpSize = $Graphics$Element.sizeOf(helpText);
          var help = $Graphics$Collage.move({ctor: "_Tuple2"
-                                           ,_0: -220
-                                           ,_1: 230})($Graphics$Collage.toForm($Text.leftAligned($Text.color($Color.white)($Text.fromString("arrow keys to move, x to shoot")))));
+                                           ,_0: $Basics.toFloat($Basics.fst(helpSize)) / 2 - 316
+                                           ,_1: 240 - $Basics.toFloat($Basics.snd(helpSize)) / 2})($Graphics$Collage.toForm(helpText));
          var environment = A2($List._op["::"],
          A2($Graphics$Collage.filled,
          $Color.black,
