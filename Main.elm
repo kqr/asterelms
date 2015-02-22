@@ -10,6 +10,11 @@ import List ((::), map)
 import Random
 
 
+-- These are currently constants. Should probably be something better later.
+wwidth  = 640
+wheight = 480
+frames  = 30
+
 
 {-- SIGNALS --}
 
@@ -20,7 +25,7 @@ gameState : Signal Space
 gameState = foldp update init input
 
 input : Signal Controls
-input = Signal.sampleOn (Time.fps 30) <|
+input = Signal.sampleOn (Time.fps frames) <|
   Controls <~ Keyboard.arrows ~ Keyboard.space
 
 type alias Arrowkeys = { x : Int, y : Int }
@@ -34,7 +39,7 @@ type alias Controls = { arrows : Arrowkeys, spacebar : Bool }
 type alias Space =
   { player : Spaceship
   , bullets : List Bullet
-  , background : Starfield
+  , stars : List (Float, Float)
   , cooldown : Float
   }
 
@@ -70,11 +75,12 @@ mkBullet (x, y) (source_vx, source_vy) dir =
 init : Space
 init =
   let randfr n = Random.float -n n
-      coordGen = Random.list 200 (Random.pair (randfr 320) (randfr 240))
+      coordGen = Random.list 200 (Random.pair
+                   (randfr (wwidth / 2)) (randfr (wheight / 2)))
       (coords, _) = Random.generate coordGen (Random.initialSeed 42)
   in  { player = mkSpaceship
       , bullets = []
-      , background = { offset = (0,0), stars = coords }
+      , stars = coords
       , cooldown = 0
       }
 
@@ -85,31 +91,24 @@ update controls space =
                    |> mechanics
   , bullets    = space.bullets
                    |> List.filter (\b -> b.ttl > 0)
-                   |> map (\b -> { b | ttl <- b.ttl - 1/30 })
+                   |> map (\b -> { b | ttl <- b.ttl - 1/frames })
                    |> shootBullets controls.spacebar space.cooldown space.player
                    |> map mechanics
-  , background = offsetBackground space.background space.player
+  , stars = offsetBackground space.stars space.player
   , cooldown   = if space.cooldown > 0
-                    then space.cooldown - 1/30
+                    then space.cooldown - 1/frames
                     else if controls.spacebar
                          then 0.4
                          else 0
   }
 
 
-offsetBackground : Starfield -> Entity a -> Starfield
-offsetBackground bg spaceship =
-  let vx = spaceship.velx / 4
-      vy = spaceship.vely / 4
-      ox = fst bg.offset
-      oy = snd bg.offset
-      newox = -vx
-      newoy = -vy
-      newstars = map (\(x, y) -> wrapstars (-vx, -vy) (x + ox, y + oy)) bg.stars
-  in  { stars = newstars, offset = (newox, newoy) }
+offsetBackground : List (Float, Float) -> Entity a -> List (Float, Float)
+offsetBackground stars spaceship =
+  map (wrapstars (spaceship.velx / 4, spaceship.vely / 4)) stars
 
 wrapstars (vx, vy) (x, y) =
-  let fakeEntity = { posx = x, posy = y, velx = vx, vely = vy }
+  let fakeEntity = { posx = x - vx, posy = y - vy, velx = -vx, vely = -vy }
       wrapped = wrap fakeEntity
   in  (wrapped.posx, wrapped.posy)
 
@@ -145,19 +144,19 @@ mechanics ety =
 wrap : Entity a -> Entity a
 wrap ety =
   let cp = clippingPoints ety
-  in  if | ety.posx >  320 -> (if | cp.left_y   >  240 -> { ety | posx <-    cp.top_x, posy <-        240 }
-                                  | cp.left_y   < -240 -> { ety | posx <- cp.bottom_x, posy <-       -240 }
-                                  | otherwise          -> { ety | posx <-        -320, posy <-  cp.left_y })
-         | ety.posy >  240 -> (if | cp.bottom_x >  320 -> { ety | posx <-         320, posy <- cp.right_y }
-                                  | cp.bottom_x < -320 -> { ety | posx <-        -320, posy <-  cp.left_y }
-                                  | otherwise          -> { ety | posx <- cp.bottom_x, posy <-       -240 })
-         | ety.posx < -320 -> (if | cp.right_y  >  240 -> { ety | posx <-    cp.top_x, posy <-        240 }
-                                  | cp.right_y  < -240 -> { ety | posx <- cp.bottom_x, posy <-       -240 }
-                                  | otherwise          -> { ety | posx <-         320, posy <- cp.right_y })
-         | ety.posy < -240 -> (if | cp.top_x    >  320 -> { ety | posx <-         320, posy <- cp.right_y }
-                                  | cp.top_x    < -320 -> { ety | posx <-        -320, posy <-  cp.left_y }
-                                  | otherwise          -> { ety | posx <-    cp.top_x, posy <-        240 })
-         | otherwise       -> ety
+  in  if | ety.posx >   wwidth / 2 -> (if | cp.left_y   >  wheight / 2 -> { ety | posx <-    cp.top_x, posy <-  wheight / 2 }
+                                          | cp.left_y   < -wheight / 2 -> { ety | posx <- cp.bottom_x, posy <- -wheight / 2 }
+                                          | otherwise                  -> { ety | posx <- -wwidth / 2, posy <-    cp.left_y })
+         | ety.posy >  wheight / 2 -> (if | cp.bottom_x >   wwidth / 2 -> { ety | posx <-  wwidth / 2, posy <-   cp.right_y }
+                                          | cp.bottom_x <  -wwidth / 2 -> { ety | posx <- -wwidth / 2, posy <-    cp.left_y }
+                                          | otherwise                  -> { ety | posx <- cp.bottom_x, posy <- -wheight / 2 })
+         | ety.posx <  -wwidth / 2 -> (if | cp.right_y  >  wheight / 2 -> { ety | posx <-    cp.top_x, posy <-  wheight / 2 }
+                                          | cp.right_y  < -wheight / 2 -> { ety | posx <- cp.bottom_x, posy <- -wheight / 2 }
+                                          | otherwise                  -> { ety | posx <-  wwidth / 2, posy <-   cp.right_y })
+         | ety.posy < -wheight / 2 -> (if | cp.top_x    >   wwidth / 2 -> { ety | posx <-  wwidth / 2, posy <-   cp.right_y }
+                                          | cp.top_x    <  -wwidth / 2 -> { ety | posx <- -wwidth / 2, posy <-    cp.left_y }
+                                          | otherwise                  -> { ety | posx <-    cp.top_x, posy <-  wheight / 2 })
+         | otherwise               -> ety
 
 
 type alias ClippingPoints =
@@ -165,10 +164,10 @@ type alias ClippingPoints =
 
 clippingPoints : Entity a -> ClippingPoints
 clippingPoints { posx, posy, velx, vely } =
-  { top_x    = posx - safediv velx vely * (posy - 240)
-  , left_y   = posy - safediv vely velx * (posx + 320)
-  , bottom_x = posx - safediv velx vely * (posy + 240)
-  , right_y  = posy - safediv vely velx * (posx - 320)
+  { top_x    = posx - safediv velx vely * (posy - wheight / 2)
+  , left_y   = posy - safediv vely velx * (posx + wwidth / 2)
+  , bottom_x = posx - safediv velx vely * (posy + wheight / 2)
+  , right_y  = posy - safediv vely velx * (posx - wwidth / 2)
   }
 
 safediv x y = if y == 0 then 0 else x / y
@@ -183,17 +182,11 @@ view space =
                  |> move (space.player.posx, space.player.posy)
                  |> rotate space.player.dir
       bullets = map (\b -> move (b.posx, b.posy) b.form) space.bullets
-      environment = filled black (rect 640 480)
-                      :: map (\pos -> move pos sprStar)
-                           (absoluteStarpos space.background)
-      playingArea = collage 640 480 <|
+      environment = filled black (rect wwidth wheight)
+                      :: map (\pos -> move pos sprStar) space.stars
+      playingArea = collage wwidth wheight <|
                       environment ++ [player] ++ bullets
-  in  container 640 480 middle playingArea
-
-
-absoluteStarpos : Starfield -> List (Float, Float)
-absoluteStarpos { offset, stars } =
-  map (\(x, y) -> (x + fst offset, y + snd offset)) stars
+  in  container wwidth wheight middle playingArea
 
 
 type alias Starfield =
